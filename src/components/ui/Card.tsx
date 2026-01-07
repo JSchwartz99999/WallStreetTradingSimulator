@@ -9,10 +9,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 export function Card({ children, className, ...props }: CardProps) {
   return (
     <div
-      className={clsx(
-        'card p-3 sm:p-4',
-        className
-      )}
+      className={clsx('card', className)}
       {...props}
     >
       {children}

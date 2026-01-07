@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'success' | 'danger';
+  variant?: 'primary' | 'secondary' | 'success' | 'danger' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
 }
 
@@ -12,6 +12,7 @@ const variants = {
   secondary: 'bg-gray-700 hover:bg-gray-600 text-white',
   success: 'bg-emerald-600 hover:bg-emerald-700 text-white',
   danger: 'bg-red-600 hover:bg-red-700 text-white',
+  ghost: 'bg-transparent hover:bg-gray-700/50 text-gray-300 hover:text-white',
 };
 
 const sizes = {
@@ -39,6 +40,7 @@ export function Button({
         variant === 'danger' && 'focus:ring-red-400',
         variant === 'primary' && 'focus:ring-emerald-400',
         variant === 'secondary' && 'focus:ring-gray-400',
+        variant === 'ghost' && 'focus:ring-gray-400',
         className
       )}
       disabled={disabled}

@@ -6,13 +6,54 @@
 @layer base {
   body {
     @apply bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 min-h-screen;
+    transition: background 0.3s ease;
+  }
+
+  /* Light theme */
+  .light-theme body,
+  body.light-theme {
+    @apply bg-gradient-to-br from-gray-100 via-gray-50 to-blue-50;
+  }
+
+  .light-theme {
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --card-border: rgba(209, 213, 219, 0.5);
+    --text-primary: #1f2937;
+    --text-secondary: #4b5563;
+    --text-muted: #6b7280;
   }
 }
 
 /* Custom component styles */
 @layer components {
   .card {
-    @apply bg-gray-800/95 border border-gray-700/50 rounded-xl backdrop-blur-sm;
+    @apply bg-gray-800/95 border border-gray-700/50 rounded-xl backdrop-blur-sm p-4;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+
+  .light-theme .card {
+    background: var(--card-bg);
+    border-color: var(--card-border);
+    @apply text-gray-800;
+  }
+
+  .light-theme .text-gray-100,
+  .light-theme .text-gray-200,
+  .light-theme .text-white {
+    color: var(--text-primary);
+  }
+
+  .light-theme .text-gray-400,
+  .light-theme .text-gray-500 {
+    color: var(--text-secondary);
+  }
+
+  .light-theme .bg-gray-700 {
+    @apply bg-gray-200;
+  }
+
+  .light-theme .bg-gray-700\/50 {
+    @apply bg-gray-200/50;
   }
 
   .glow-green {
@@ -34,6 +75,7 @@
   /* Skip link for accessibility */
   .skip-link {
     @apply absolute -top-10 left-0 bg-emerald-500 text-white px-4 py-2 z-50;
+    transition: top 0.2s ease;
   }
 
   .skip-link:focus {
@@ -44,6 +86,19 @@
   .sr-only {
     @apply absolute w-px h-px p-0 -m-px overflow-hidden whitespace-nowrap border-0;
     clip: rect(0, 0, 0, 0);
+  }
+
+  /* Price animation */
+  .price-animate {
+    transition: color 0.3s ease, transform 0.2s ease;
+  }
+
+  .price-up {
+    animation: price-flash-up 0.5s ease;
+  }
+
+  .price-down {
+    animation: price-flash-down 0.5s ease;
   }
 }
 
@@ -63,6 +118,18 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+
+  .light-theme ::-webkit-scrollbar-track {
+    @apply bg-gray-200;
+  }
+
+  .light-theme ::-webkit-scrollbar-thumb {
+    @apply bg-gray-400;
+  }
+
+  .light-theme ::-webkit-scrollbar-thumb:hover {
     @apply bg-gray-500;
   }
 }
@@ -96,4 +163,105 @@ select:focus-visible {
 @keyframes pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
+}
+
+/* Price flash animations */
+@keyframes price-flash-up {
+  0% { color: inherit; }
+  25% { color: #10b981; transform: scale(1.05); }
+  100% { color: inherit; transform: scale(1); }
+}
+
+@keyframes price-flash-down {
+  0% { color: inherit; }
+  25% { color: #ef4444; transform: scale(1.05); }
+  100% { color: inherit; transform: scale(1); }
+}
+
+/* Fade in animation */
+.animate-fade-in {
+  animation: fade-in 0.2s ease;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; transform: translateY(-4px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide in animation */
+.animate-slide-in {
+  animation: slide-in 0.3s ease;
+}
+
+@keyframes slide-in {
+  0% { opacity: 0; transform: translateX(20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Button hover effects */
+button {
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Card hover effect */
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Toast animation */
+.toast-enter {
+  animation: toast-enter 0.3s ease;
+}
+
+@keyframes toast-enter {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.toast-exit {
+  animation: toast-exit 0.2s ease forwards;
+}
+
+@keyframes toast-exit {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-10px) scale(0.95); }
+}
+
+/* Number counter animation */
+.number-animate {
+  display: inline-block;
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Sparkline container */
+.sparkline-container {
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+/* Light theme specific overrides */
+.light-theme .glow-green {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
+}
+
+.light-theme .glow-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.2);
+}
+
+.light-theme input,
+.light-theme select {
+  @apply bg-white border-gray-300 text-gray-800;
+}
+
+.light-theme input:focus,
+.light-theme select:focus {
+  @apply border-emerald-500;
 }

@@ -1,6 +1,8 @@
 import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { usePortfolioStore } from '@/store/portfolioStore';
 import { formatCurrency, formatTime } from '@/utils/formatters';
+import { exportTradesToCsv } from '@/utils/exportCsv';
 import { clsx } from 'clsx';
 
 interface TradeHistoryProps {
@@ -10,11 +12,28 @@ interface TradeHistoryProps {
 export function TradeHistory({ className }: TradeHistoryProps) {
   const tradeHistory = usePortfolioStore((state) => state.tradeHistory);
 
+  const handleExport = () => {
+    exportTradesToCsv(tradeHistory);
+  };
+
   return (
     <Card className={className} aria-labelledby="history-title">
-      <h2 id="history-title" className="text-lg font-semibold mb-4 text-gray-200">
-        Trade History
-      </h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 id="history-title" className="text-lg font-semibold text-gray-200">
+          Trade History
+        </h2>
+        {tradeHistory.length > 0 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleExport}
+            aria-label="Export trade history to CSV"
+            title="Export to CSV"
+          >
+            📥 Export
+          </Button>
+        )}
+      </div>
 
       <div className="space-y-2 max-h-80 overflow-y-auto" role="list" aria-label="Trade history">
         {tradeHistory.length === 0 ? (

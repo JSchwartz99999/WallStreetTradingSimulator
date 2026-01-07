@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { SoundToggle } from '@/components/ui/SoundToggle';
+import { TutorialButton } from '@/components/tutorial/Tutorial';
 import { usePortfolioStore } from '@/store/portfolioStore';
 import { useMarketStore } from '@/store/marketStore';
 import { formatCurrency } from '@/utils/formatters';
@@ -73,7 +76,7 @@ export function Header() {
             <div className="text-xs sm:text-sm text-gray-400">Portfolio Value</div>
             <div
               className={clsx(
-                'text-lg sm:text-xl font-bold',
+                'text-lg sm:text-xl font-bold price-animate',
                 portfolioValue >= INITIAL_CASH ? 'text-emerald-400' : 'text-red-400'
               )}
               aria-label={`Portfolio value: ${formatCurrency(portfolioValue)}`}
@@ -85,7 +88,7 @@ export function Header() {
           <div className="text-left sm:text-right">
             <div className="text-xs sm:text-sm text-gray-400">Cash Balance</div>
             <div
-              className="text-lg sm:text-xl font-bold text-emerald-400"
+              className="text-lg sm:text-xl font-bold text-emerald-400 price-animate"
               aria-label={`Cash balance: ${formatCurrency(cashBalance)}`}
             >
               {formatCurrency(cashBalance)}
@@ -93,16 +96,22 @@ export function Header() {
           </div>
 
           <div className="text-left sm:text-right">
-            <div className="text-xs sm:text-sm text-gray-400">Day's P/L</div>
+            <div className="text-xs sm:text-sm text-gray-400">Total P/L</div>
             <div
               className={clsx(
-                'text-lg sm:text-xl font-bold',
+                'text-lg sm:text-xl font-bold price-animate',
                 dayPL >= 0 ? 'text-emerald-400' : 'text-red-400'
               )}
-              aria-label={`Day's profit and loss: ${formatCurrency(dayPL)}`}
+              aria-label={`Total profit and loss: ${formatCurrency(dayPL)}`}
             >
               {formatCurrency(dayPL)} ({dayPLPercent >= 0 ? '+' : ''}{dayPLPercent.toFixed(2)}%)
             </div>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <SoundToggle />
+            <TutorialButton />
           </div>
 
           <Button

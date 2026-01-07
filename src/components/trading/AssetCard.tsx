@@ -1,5 +1,8 @@
 import { clsx } from 'clsx';
 import { formatCurrency, formatPercent } from '@/utils/formatters';
+import { useWatchlistStore } from '@/store/watchlistStore';
+import { useMarketStore } from '@/store/marketStore';
+import { Sparkline } from '@/components/charts/Sparkline';
 import type { Asset } from '@/utils/constants';
 
 interface AssetCardProps {
@@ -30,6 +33,15 @@ export function AssetCard({
   const isPositive = change >= 0;
   const colors = typeColors[asset.type];
 
+  const isInWatchlist = useWatchlistStore((state) => state.watchlist.includes(symbol));
+  const toggleWatchlist = useWatchlistStore((state) => state.toggleWatchlist);
+  const priceHistory = useMarketStore((state) => state.priceHistory[symbol] ?? []);
+
+  const handleWatchlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toggleWatchlist(symbol);
+  };
+
   return (
     <div
       onClick={() => onSelect(symbol)}
@@ -51,21 +63,47 @@ export function AssetCard({
       )}
     >
       <div className="flex justify-between items-start mb-1">
-        <span className="font-semibold text-white">{symbol}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleWatchlistClick}
+            className={clsx(
+              'text-lg transition-colors focus:outline-none hover:scale-110',
+              isInWatchlist ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-400'
+            )}
+            aria-label={isInWatchlist ? `Remove ${symbol} from watchlist` : `Add ${symbol} to watchlist`}
+          >
+            {isInWatchlist ? '★' : '☆'}
+          </button>
+          <span className="font-semibold text-white">{symbol}</span>
+        </div>
         <span className={clsx('text-xs px-2 py-0.5 rounded', colors.bg, colors.text)}>
           {asset.type}
         </span>
       </div>
       <div className="text-sm text-gray-400 mb-1">{asset.name}</div>
-      <div className="text-lg font-bold text-white">{formatCurrency(price)}</div>
-      <div
-        className={clsx(
-          'text-sm flex items-center gap-1',
-          isPositive ? 'text-emerald-400' : 'text-red-400'
+
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-lg font-bold text-white price-animate">{formatCurrency(price)}</div>
+          <div
+            className={clsx(
+              'text-sm flex items-center gap-1',
+              isPositive ? 'text-emerald-400' : 'text-red-400'
+            )}
+          >
+            <span aria-hidden="true">{isPositive ? '▲' : '▼'}</span>
+            {formatCurrency(Math.abs(change))} ({formatPercent(changePercent)})
+          </div>
+        </div>
+
+        {priceHistory.length > 2 && (
+          <Sparkline
+            data={priceHistory}
+            width={60}
+            height={24}
+            className="opacity-80"
+          />
         )}
-      >
-        <span aria-hidden="true">{isPositive ? '▲' : '▼'}</span>
-        {formatCurrency(Math.abs(change))} ({formatPercent(changePercent)})
       </div>
     </div>
   );
