@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Header } from '@/components/layout/Header';
 import { MarketTicker } from '@/components/layout/MarketTicker';
@@ -39,34 +39,50 @@ function AppContent() {
   useWebSocketInit();
 
   const prices = useMarketStore((state) => state.prices);
-  const checkAlerts = useAlertsStore((state) => state.checkAlerts);
   const showToast = useUIStore((state) => state.showToast);
   const soundEnabled = useSettingsStore((state) => state.soundEnabled);
   const hasCompletedTutorial = useSettingsStore((state) => state.hasCompletedTutorial);
   const setShowTutorial = useSettingsStore((state) => state.setShowTutorial);
+
+  // Use ref to track if tutorial has been shown
+  const tutorialShownRef = useRef(false);
 
   // Sync sound settings
   useEffect(() => {
     soundManager.setEnabled(soundEnabled);
   }, [soundEnabled]);
 
-  // Check price alerts when prices change
+  // Check price alerts when prices change (using store method directly to avoid dependency issues)
   useEffect(() => {
-    const triggered = checkAlerts(prices);
-    triggered.forEach((alert) => {
-      showToast(
-        `🔔 Alert: ${alert.symbol} reached ${alert.condition === 'above' ? 'above' : 'below'} $${alert.targetPrice.toFixed(2)}`,
-        'info'
-      );
-      if (soundEnabled) {
-        soundManager.playAlert();
+    const alerts = useAlertsStore.getState().alerts;
+    const activeAlerts = alerts.filter(a => !a.triggered);
+
+    activeAlerts.forEach((alert) => {
+      const priceData = prices[alert.symbol];
+      if (!priceData) return;
+
+      const currentPrice = priceData.price;
+      const shouldTrigger =
+        (alert.condition === 'above' && currentPrice >= alert.targetPrice) ||
+        (alert.condition === 'below' && currentPrice <= alert.targetPrice);
+
+      if (shouldTrigger) {
+        useAlertsStore.getState().triggerAlert(alert.id);
+        showToast(
+          `🔔 Alert: ${alert.symbol} reached ${alert.condition === 'above' ? 'above' : 'below'} $${alert.targetPrice.toFixed(2)}`,
+          'info'
+        );
+        if (soundEnabled) {
+          soundManager.playAlert();
+        }
       }
     });
-  }, [prices, checkAlerts, showToast, soundEnabled]);
+  }, [prices, showToast, soundEnabled]);
 
-  // Show tutorial for first-time users
+  // Show tutorial for first-time users (only once)
   useEffect(() => {
-    if (!hasCompletedTutorial) {
+    if (!hasCompletedTutorial && !tutorialShownRef.current) {
+      tutorialShownRef.current = true;
       setShowTutorial(true);
     }
   }, [hasCompletedTutorial, setShowTutorial]);
