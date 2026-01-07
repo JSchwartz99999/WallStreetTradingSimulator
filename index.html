@@ -20,6 +20,13 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
 
+    <!-- Security Headers -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    <meta http-equiv="Permissions-Policy" content="geolocation=(), microphone=(), camera=()">
+
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
     <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -28,8 +35,8 @@
 
     <!-- Stylesheets -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.tailwindcss.com" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 
     <style>
         * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
@@ -337,9 +344,77 @@
     <script>
         'use strict';
 
+        // ==================== SECURITY UTILITIES ====================
+        const SecurityUtils = Object.freeze({
+            // Rate limiter for preventing rapid submissions
+            rateLimiter: (() => {
+                const attempts = new Map();
+                const MAX_ATTEMPTS = 10;
+                const WINDOW_MS = 60000; // 1 minute
+
+                return {
+                    check(action) {
+                        const now = Date.now();
+                        const key = action;
+                        const record = attempts.get(key) ?? { count: 0, resetTime: now + WINDOW_MS };
+
+                        if (now > record.resetTime) {
+                            record.count = 0;
+                            record.resetTime = now + WINDOW_MS;
+                        }
+
+                        if (record.count >= MAX_ATTEMPTS) {
+                            return false;
+                        }
+
+                        record.count++;
+                        attempts.set(key, record);
+                        return true;
+                    },
+                    reset(action) {
+                        attempts.delete(action);
+                    }
+                };
+            })(),
+
+            // Enhanced HTML sanitization
+            sanitizeHTML(str) {
+                if (typeof str !== 'string') return '';
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            },
+
+            // Validate and sanitize number input
+            sanitizeNumber(value, min = 0, max = Number.MAX_SAFE_INTEGER, decimals = 2) {
+                const num = parseFloat(value);
+                if (!Number.isFinite(num)) return min;
+                const clamped = Math.max(min, Math.min(max, num));
+                return Number(clamped.toFixed(decimals));
+            },
+
+            // Validate symbol format
+            isValidSymbol(symbol, allowedSymbols) {
+                return typeof symbol === 'string' &&
+                       symbol.length <= 10 &&
+                       /^[A-Z0-9]+$/.test(symbol) &&
+                       allowedSymbols.has(symbol);
+            },
+
+            // Deep freeze object to prevent mutation
+            deepFreeze(obj) {
+                Object.keys(obj).forEach(prop => {
+                    if (typeof obj[prop] === 'object' && obj[prop] !== null) {
+                        SecurityUtils.deepFreeze(obj[prop]);
+                    }
+                });
+                return Object.freeze(obj);
+            }
+        });
+
         // ==================== STATE MANAGEMENT ====================
         const STORAGE_KEY = 'wallStreetSimulator';
-        const STORAGE_VERSION = '1.0';
+        const STORAGE_VERSION = '1.1';
 
         const defaultState = {
             version: STORAGE_VERSION,
@@ -387,19 +462,20 @@
         const tickerSymbols = ['SPY', 'QQQ', 'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', 'META', 'NVDA', 'JPM'];
 
         // ==================== UTILITY FUNCTIONS ====================
+        // Create a Set of valid symbols for O(1) lookup
+        const validSymbolSet = new Set(Object.keys(assets));
+
         function sanitizeHTML(str) {
-            const div = document.createElement('div');
-            div.textContent = str;
-            return div.innerHTML;
+            return SecurityUtils.sanitizeHTML(str);
         }
 
         function isValidSymbol(symbol) {
-            return typeof symbol === 'string' && symbol in liveAssets;
+            return SecurityUtils.isValidSymbol(symbol, validSymbolSet) && symbol in liveAssets;
         }
 
         function isValidNumber(value, min = 0, max = Infinity) {
             const num = parseFloat(value);
-            return !isNaN(num) && isFinite(num) && num >= min && num <= max;
+            return Number.isFinite(num) && num >= min && num <= max;
         }
 
         function announceToScreenReader(message) {
@@ -1012,6 +1088,12 @@
 
         function executeTrade(type) {
             if (type !== 'buy' && type !== 'sell') return;
+
+            // Rate limiting check
+            if (!SecurityUtils.rateLimiter.check('trade')) {
+                showToast('Too many trades. Please wait a moment.', 'error');
+                return;
+            }
 
             const symbol = state.settings.selectedAsset;
             if (!isValidSymbol(symbol)) {
