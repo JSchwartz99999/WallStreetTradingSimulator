@@ -135,7 +135,7 @@
                     <div id="selectedAssetInfo" class="mb-4 p-3 bg-gray-700 rounded-lg">
                         <div class="text-sm text-gray-400">Selected Asset</div>
                         <div id="selectedSymbol" class="text-xl font-bold text-green-400">AAPL</div>
-                        <div id="selectedPrice" class="text-lg">$182.30</div>
+                        <div id="selectedPrice" class="text-lg">$262.24</div>
                     </div>
 
                     <form id="tradeForm" onsubmit="return false;" class="mb-4">
@@ -170,10 +170,10 @@
                                        class="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:border-green-500 focus:outline-none">
                             </div>
                             <div class="text-sm text-gray-400">
-                                Estimated Total: <span id="estimatedTotal" class="text-white font-semibold">$182.30</span>
+                                Estimated Total: <span id="estimatedTotal" class="text-white font-semibold">$262.24</span>
                             </div>
                             <div id="maxSharesHint" class="text-sm text-gray-400">
-                                Max Shares: <span id="maxShares" class="text-white">548</span>
+                                Max Shares: <span id="maxShares" class="text-white">381</span>
                             </div>
                         </div>
                     </form>
@@ -360,24 +360,24 @@
         let volumeChart = null;
         let updateIntervals = [];
 
-        // Asset data with validation
+        // Asset data with validation (Prices updated: January 6, 2026)
         const assets = Object.freeze({
             // Stocks
-            AAPL: { name: 'Apple Inc.', type: 'stocks', price: 182.30, change: 2.45 },
-            MSFT: { name: 'Microsoft', type: 'stocks', price: 378.50, change: -1.20 },
-            TSLA: { name: 'Tesla Inc.', type: 'stocks', price: 245.80, change: 5.30 },
-            GOOGL: { name: 'Alphabet', type: 'stocks', price: 141.20, change: 1.80 },
-            AMZN: { name: 'Amazon', type: 'stocks', price: 178.90, change: -0.65 },
-            META: { name: 'Meta Platforms', type: 'stocks', price: 505.75, change: 8.20 },
-            NVDA: { name: 'NVIDIA', type: 'stocks', price: 875.40, change: 15.60 },
-            JPM: { name: 'JPMorgan Chase', type: 'stocks', price: 198.30, change: -2.10 },
+            AAPL: { name: 'Apple Inc.', type: 'stocks', price: 262.24, change: -5.02 },
+            MSFT: { name: 'Microsoft', type: 'stocks', price: 475.00, change: 2.15 },
+            TSLA: { name: 'Tesla Inc.', type: 'stocks', price: 432.96, change: -18.71 },
+            GOOGL: { name: 'Alphabet', type: 'stocks', price: 314.34, change: -2.36 },
+            AMZN: { name: 'Amazon', type: 'stocks', price: 240.92, change: 7.86 },
+            META: { name: 'Meta Platforms', type: 'stocks', price: 660.46, change: 1.67 },
+            NVDA: { name: 'NVIDIA', type: 'stocks', price: 187.27, change: -0.85 },
+            JPM: { name: 'JPMorgan Chase', type: 'stocks', price: 334.29, change: 1.75 },
             // Commodities
-            GC: { name: 'Gold', type: 'commodities', price: 2045.50, change: 12.30 },
-            CL: { name: 'Crude Oil', type: 'commodities', price: 78.45, change: -0.85 },
-            SI: { name: 'Silver', type: 'commodities', price: 23.80, change: 0.45 },
+            GC: { name: 'Gold', type: 'commodities', price: 4478.24, change: 30.24 },
+            CL: { name: 'Crude Oil', type: 'commodities', price: 58.15, change: -0.17 },
+            SI: { name: 'Silver', type: 'commodities', price: 81.52, change: 4.97 },
             // Bonds
-            TNX: { name: '10Y Treasury', type: 'bonds', price: 4.25, change: 0.02 },
-            TYX: { name: '30Y Treasury', type: 'bonds', price: 4.42, change: -0.01 }
+            TNX: { name: '10Y Treasury', type: 'bonds', price: 4.19, change: 0.02 },
+            TYX: { name: '30Y Treasury', type: 'bonds', price: 4.88, change: 0.03 }
         });
 
         // Mutable copy for price updates
